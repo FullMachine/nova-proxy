@@ -3,25 +3,37 @@ import requests
 
 app = Flask(__name__)
 
-@app.route('/')
+@app.route("/")
 def home():
-    return 'Nova Proxy is working!'
+    return "Nova Proxy is live!"
 
-@app.route('/nba/player_search', methods=['GET'])
-def proxy_bdl_player_search():
-    player = request.args.get('player')
-    if not player:
+@app.route("/proxy/ball_dont_lie/player", methods=["GET"])
+def proxy_ball_dont_lie():
+    player_name = request.args.get("player")
+    if not player_name:
         return jsonify({"error": "Missing player name"}), 400
 
     try:
-        url = f"https://balldontlie.io/api/v1/players?search={player}"
+        url = f"https://balldontlie.io/api/v1/players?search={player_name}"
         response = requests.get(url)
-        response.raise_for_status()  # Raise error for bad status codes
-        return jsonify(response.json())
-    except requests.exceptions.HTTPError as e:
-        return jsonify({"error": "HTTP error", "details": str(e)}), 500
+        data = response.json()
+        return jsonify(data), response.status_code
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-if __name__ == '__main__':
-    app.run()
+@app.route("/proxy/ball_dont_lie/season_avg", methods=["GET"])
+def proxy_season_avg():
+    player_id = request.args.get("player_id")
+    if not player_id:
+        return jsonify({"error": "Missing player_id"}), 400
+
+    try:
+        url = f"https://www.balldontlie.io/api/v1/season_averages?player_ids[]={player_id}"
+        response = requests.get(url)
+        data = response.json()
+        return jsonify(data), response.status_code
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+if __name__ == "__main__":
+    app.run(debug=True)
