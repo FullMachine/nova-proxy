@@ -14,7 +14,7 @@ def proxy_bdl_player_search():
         return jsonify({"error": "Missing player name"}), 400
 
     try:
-        url = f"https://www.balldontlie.io/api/v1/players?search={player}"
+        url = f"https://balldontlie.io/api/v1/players?search={player}"
         response = requests.get(url)
         response.raise_for_status()  # Raise error for bad status codes
         return jsonify(response.json())
