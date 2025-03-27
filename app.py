@@ -1,42 +1,27 @@
-from flask import Flask, jsonify, request
+from flask import Flask, request, jsonify
 import requests
 
 app = Flask(__name__)
 
-@app.route("/")
+@app.route('/')
 def home():
-    return "Nova Proxy is live!"
+    return 'Nova Proxy is working!'
 
-# ✅ NBA Proxy (BallDontLie)
-@app.route("/proxy/nba/player_stats", methods=["GET"])
-def proxy_nba_stats():
-    player = request.args.get("player")
+@app.route('/nba/player_search', methods=['GET'])
+def proxy_bdl_player_search():
+    player = request.args.get('player')
     if not player:
-        return jsonify({"error": "Missing 'player' query parameter"}), 400
+        return jsonify({"error": "Missing player name"}), 400
 
     try:
-        # Step 1 – Get Player ID
-        player_res = requests.get(f"https://www.balldontlie.io/api/v1/players?search={player}")
-        player_res.raise_for_status()
-        player_data = player_res.json()
+        url = f"https://www.balldontlie.io/api/v1/players?search={player}"
+        response = requests.get(url)
+        response.raise_for_status()  # Raise error for bad status codes
+        return jsonify(response.json())
+    except requests.exceptions.HTTPError as e:
+        return jsonify({"error": "HTTP error", "details": str(e)}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-        if not player_data["data"]:
-            return jsonify({"error": "Player not found"}), 404
-
-        player_id = player_data["data"][0]["id"]
-
-        # Step 2 – Get Season Averages
-        stats_res = requests.get(f"https://www.balldontlie.io/api/v1/season_averages?player_ids[]={player_id}")
-        stats_res.raise_for_status()
-        stats_data = stats_res.json()
-
-        return jsonify(stats_data)
-    except requests.exceptions.HTTPError as http_err:
-        return jsonify({"error": "HTTP error", "details": str(http_err)}), 500
-    except Exception as err:
-        return jsonify({"error": "Failed to fetch NBA stats", "details": str(err)}), 500
-
-# You can add more proxies here for soccer or other sports too
-
-if __name__ == "__main__":
-    app.run(debug=True)
+if __name__ == '__main__':
+    app.run()
