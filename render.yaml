@@ -2,6 +2,6 @@ services:
   - type: web
     name: nova-proxy
     env: python
+    buildCommand: ""
+    startCommand: gunicorn proxy:app
     plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
